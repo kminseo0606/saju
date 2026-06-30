@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나를 읽는 색 · PAL</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--dark:#0a0a0a;--dark2:#111;--dark3:#1a1a1a;--font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-mono:'SF Mono','Fira Code',monospace;--radius-md:8px;--radius-lg:12px}
+body{font-family:var(--font-sans);background:#0a0a0a;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:0;margin:0}
+#app{width:100%;max-width:100%;padding:0}
+.screen{display:none}
+.screen.active{display:block}
+.dark-panel{background:var(--dark);border-radius:var(--radius-lg);padding:2.5rem 2rem;text-align:center}
+.star-wrap{position:relative;overflow:hidden;border-radius:var(--radius-lg)}
+.star{position:absolute;border-radius:50%;background:#fff;animation:tw 3s infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.7}}
+.label-sm{font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.4);text-transform:uppercase}
+.title-lg{font-size:26px;font-weight:500;color:#fff;line-height:1.3}
+.sub-txt{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+input[type=number],input[type=text]{background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--radius-md);padding:10px 14px;font-size:15px;text-align:center;outline:none;font-family:var(--font-sans)}
+input[type=number]:focus,input[type=text]:focus{border-color:rgba(255,255,255,.5)}
+input[type=number]::placeholder,input[type=text]::placeholder{color:rgba(255,255,255,.28)}
+select{background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--radius-md);padding:10px 14px;font-size:14px;font-family:var(--font-sans);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+select:focus{border-color:rgba(255,255,255,.5)}
+select option{background:#1a1a1a;color:#fff}
+.pill-btn{display:inline-block;background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.25);color:#fff;padding:11px 32px;border-radius:999px;font-size:14px;cursor:pointer;transition:background .2s;font-family:var(--font-sans)}
+.pill-btn:hover{background:rgba(255,255,255,.18)}
+.color-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pyramid-anim{animation:spin3d 4s linear infinite;transform-style:preserve-3d;display:block;margin:0 auto}
+@keyframes spin3d{0%{transform:rotateY(0deg) rotateX(8deg)}100%{transform:rotateY(360deg) rotateX(8deg)}}
+.load-txt{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:.1em;animation:pulse .9s ease-in-out infinite alternate}
+@keyframes pulse{0%{opacity:.3}100%{opacity:.9}}
+.deck-area{min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;margin:1rem 0}
+.card3d{position:absolute;width:110px;height:168px;cursor:pointer;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s,outline .15s}
+.card3d:hover{z-index:20;transform-origin:center bottom}
+.card-face{width:100%;height:100%;border-radius:10px;border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;justify-content:space-between;padding:10px 8px}
+.talisman-wrap{perspective:800px;width:240px;margin:0 auto}
+.talisman{width:240px;height:360px;position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.4,0,.2,1);cursor:pointer}
+.talisman.flipped{transform:rotateY(180deg)}
+.talisman-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--radius-lg);overflow:hidden}
+.talisman-back{transform:rotateY(180deg)}
+.t-border{position:absolute;inset:8px;border:1.5px solid rgba(255,255,255,.25);border-radius:8px;pointer-events:none}
+.t-corner{position:absolute;width:16px;height:16px}
+.t-corner.tl{top:16px;left:16px;border-top:2px solid rgba(255,255,255,.6);border-left:2px solid rgba(255,255,255,.6)}
+.t-corner.tr{top:16px;right:16px;border-top:2px solid rgba(255,255,255,.6);border-right:2px solid rgba(255,255,255,.6)}
+.t-corner.bl{bottom:16px;left:16px;border-bottom:2px solid rgba(255,255,255,.6);border-left:2px solid rgba(255,255,255,.6)}
+.t-corner.br{bottom:16px;right:16px;border-bottom:2px solid rgba(255,255,255,.6);border-right:2px solid rgba(255,255,255,.6)}
+.t-guardian-circle{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:20px auto 12px;border:2px solid rgba(255,255,255,.2)}
+.color-swatch-row{display:flex;gap:6px;justify-content:center;padding:12px}
+.swatch{width:28px;height:28px;border-radius:4px;cursor:pointer;position:relative;transition:transform .15s;border:1px solid rgba(255,255,255,.15)}
+.swatch:hover{transform:scale(1.15)}
+.swatch.selected{border:2px solid #fff;transform:scale(1.2)}
+.action-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+.act-btn{padding:10px 20px;border-radius:999px;font-size:13px;cursor:pointer;border:0.5px solid #ccc;background:#f5f5f3;color:#111;transition:all .2s;font-family:var(--font-sans)}
+.act-btn:hover{background:#fff}
+.act-btn.dark-btn{background:#111;color:#fff;border-color:#333}
+.qr-box{background:var(--dark);border-radius:var(--radius-lg);padding:2rem;text-align:center;margin-bottom:1.5rem}
+.closing-line{display:block;font-size:13px;color:rgba(255,255,255,.5);line-height:2.2;opacity:0;transition:opacity .8s}
+.closing-line.visible{opacity:1}
+.badge{display:inline-block;font-size:10px;letter-spacing:.08em;padding:3px 10px;border-radius:999px;font-weight:500}
+.err{color:rgba(255,100,100,.9);font-size:12px;margin-top:6px}
+.section-label{font-size:11px;letter-spacing:.1em;color:#666;text-transform:uppercase;margin-bottom:.75rem}
+@keyframes cardPre{0%{transform:translateY(0)}100%{transform:translateY(-10px)}}
+.no-time-label{display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.75rem;transition:color .2s}
+.no-time-label:hover{color:rgba(255,255,255,.7)}
+.no-time-label input[type=checkbox]{width:15px;height:15px;accent-color:rgba(255,255,255,.6);cursor:pointer;flex-shrink:0}
+.time-section{transition:opacity .3s,max-height .4s;overflow:hidden;max-height:300px;opacity:1}
+.time-section.hidden{max-height:0;opacity:0;pointer-events:none}
+.divider{width:40px;height:0.5px;background:rgba(255,255,255,.12);margin:.75rem auto}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="s-intro" class="screen active">
+<div class="star-wrap dark-panel" style="min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem">
+<div id="introStars"></div>
+<div style="position:relative;z-index:2;width:100%;max-width:400px">
+<p class="label-sm" style="margin-bottom:.75rem">나를 읽는 색 · PAL</p>
+<h1 class="title-lg" style="margin-bottom:.4rem">당신의 시간이<br>시작된 날을</h1>
+<p class="sub-txt" style="margin-bottom:1.5rem">입력해주세요</p>
+<div style="display:flex;gap:8px;justify-content:center;margin-bottom:1.25rem">
+<span class="color-dot" style="background:#4A90D9"></span>
+<span class="color-dot" style="background:#E05C4A"></span>
+<span class="color-dot" style="background:#E8B84B"></span>
+<span class="color-dot" style="background:#C8C0B0"></span>
+<span class="color-dot" style="background:#384858"></span>
+</div>
+<p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.4rem">이름</p>
+<div style="margin-bottom:.75rem"><input type="text" id="nameIn" placeholder="이름을 입력하세요" maxlength="10" style="width:200px"></div>
+<p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.4rem">생년월일</p>
+<div style="display:flex;gap:6px;justify-content:center;margin-bottom:.75rem;flex-wrap:wrap">
+<input type="number" id="yIn" placeholder="년도" min="1900" max="2099" style="width:90px">
+<span style="color:rgba(255,255,255,.3);display:flex;align-items:center;font-size:18px">.</span>
+<input type="number" id="mIn" placeholder="월" min="1" max="12" style="width:66px">
+<span style="color:rgba(255,255,255,.3);display:flex;align-items:center;font-size:18px">.</span>
+<input type="number" id="dIn" placeholder="일" min="1" max="31" style="width:66px">
+</div>
+<div class="divider"></div>
+<label class="no-time-label">
+  <input type="checkbox" id="noTimeChk" onchange="toggleTimeInput(this)">
+  태어난 시간을 모릅니다
+</label>
+<div class="time-section" id="timeSection">
+  <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.4rem">태어난 시간</p>
+  <div style="display:flex;gap:6px;justify-content:center;margin-bottom:.75rem">
+    <input type="number" id="hIn" placeholder="시 (0~23)" min="0" max="23" style="width:96px">
+    <span style="color:rgba(255,255,255,.3);display:flex;align-items:center;font-size:18px">:</span>
+    <input type="number" id="minIn" placeholder="분" min="0" max="59" style="width:72px">
+  </div>
+  <p style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:.4rem">태어난 나라</p>
+  <div style="margin-bottom:.75rem">
+    <select id="tzIn" style="width:220px">
+      <option value="Asia/Seoul">🇰🇷 한국 (KST, UTC+9)</option>
+      <option value="America/New_York">🇺🇸 미국 동부 (ET)</option>
+      <option value="America/Chicago">🇺🇸 미국 중부 (CT)</option>
+      <option value="America/Los_Angeles">🇺🇸 미국 서부 (PT)</option>
+      <option value="Europe/London">🇬🇧 영국 (GMT/BST)</option>
+      <option value="Europe/Amsterdam">🇳🇱 네덜란드 (CET)</option>
+      <option value="Europe/Paris">🇫🇷 프랑스 / 🇩🇪 독일 (CET)</option>
+      <option value="Asia/Tokyo">🇯🇵 일본 (JST)</option>
+      <option value="Asia/Shanghai">🇨🇳 중국 (CST)</option>
+      <option value="Asia/Hong_Kong">🇭🇰 홍콩 (HKT)</option>
+      <option value="Asia/Singapore">🇸🇬 싱가포르 (SGT)</option>
+      <option value="Asia/Dubai">🇦🇪 두바이 (GST)</option>
+      <option value="Australia/Sydney">🇦🇺 호주 동부 (AEST)</option>
+      <option value="UTC">🌐 UTC</option>
+    </select>
+  </div>
+  <p style="font-size:11px;color:rgba(255,255,255,.2);margin-bottom:.75rem">입력한 현지 시간을 한국 시간(KST)으로 변환합니다</p>
+</div>
+<div class="divider"></div>
+<p class="err" id="errMsg" style="display:none"></p>
+<button class="pill-btn" onclick="doAnalysis()">분석 시작하기</button>
+</div>
+</div>
+</div>
+
+<div id="s-load1" class="screen">
+<div class="dark-panel" style="min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
+<svg class="pyramid-anim" width="72" height="72" viewBox="0 0 80 80">
+<polygon points="40,6 72,62 8,62" fill="none" stroke="#4A90D9" stroke-width="1.5" opacity=".7"/>
+<polygon points="40,6 72,62 40,72" fill="#1a2a4a" stroke="#4A90D9" stroke-width="1" opacity=".5"/>
+<polygon points="40,6 8,62 40,72" fill="#0a1a3a" stroke="#3a7ac9" stroke-width="1" opacity=".4"/>
+<polygon points="8,62 72,62 40,72" fill="#2a1a0a" stroke="#888" stroke-width=".5" opacity=".3"/>
+</svg>
+<p class="load-txt" id="loadTxt1">기운을 분석하는 중...</p>
+</div>
+</div>
+
+<div id="s-result" class="screen">
+<div style="padding:1.5rem 0">
+<div id="resultHeader" class="star-wrap dark-panel" style="margin-bottom:1.25rem;padding:2rem"></div>
+<div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem">
+<p class="section-label">오행 분포</p>
+<div id="barsWrap"></div>
+</div>
+<div id="ohaengCards" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem"></div>
+<div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem">
+<p class="section-label">수호신</p>
+<div id="guardianCards" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+</div>
+<div class="action-row">
+<button class="act-btn" onclick="showScreen('s-intro')">← 처음으로</button>
+<button class="act-btn dark-btn" onclick="goPaletteLoading()">컬러 팔레트 보기 →</button>
+</div>
+</div>
+</div>
+
+<div id="s-load2" class="screen">
+<div class="dark-panel" style="min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem">
+<div style="display:flex;gap:10px">
+<div style="width:60px;height:90px;border-radius:8px;background:#1a1a2e;border:1px solid rgba(255,255,255,.1);animation:cardPre 1.2s ease-in-out infinite alternate"></div>
+<div style="width:60px;height:90px;border-radius:8px;background:#1a2a1a;border:1px solid rgba(255,255,255,.1);animation:cardPre 1.2s ease-in-out .2s infinite alternate"></div>
+<div style="width:60px;height:90px;border-radius:8px;background:#2a1a0a;border:1px solid rgba(255,255,255,.1);animation:cardPre 1.2s ease-in-out .4s infinite alternate"></div>
+<div style="width:60px;height:90px;border-radius:8px;background:#1a0a0a;border:1px solid rgba(255,255,255,.1);animation:cardPre 1.2s ease-in-out .6s infinite alternate"></div>
+<div style="width:60px;height:90px;border-radius:8px;background:#2a2a1a;border:1px solid rgba(255,255,255,.1);animation:cardPre 1.2s ease-in-out .8s infinite alternate"></div>
+</div>
+<p class="load-txt" id="loadTxt2">컬러 팔레트를 배열하는 중...</p>
+</div>
+</div>
+
+<div id="s-palette" class="screen">
+<div style="padding:1.5rem 0">
+<div class="dark-panel" style="margin-bottom:1.5rem;padding:1.5rem 1rem">
+<p class="label-sm" style="margin-bottom:.5rem">나만의 컬러 팔레트 배열</p>
+<p id="paletteTitleTxt" style="font-size:16px;font-weight:500;color:#fff;margin-bottom:.3rem"></p>
+<p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.5rem">카드를 클릭해서 부적에 담을 고유 색상을 선택하세요</p>
+<div class="deck-area" id="deckArea"></div>
+<div id="selectedColorInfo" style="min-height:60px;display:flex;align-items:center;justify-content:center;gap:12px;padding:.5rem 0"></div>
+</div>
+<div class="action-row">
+<button class="act-btn" onclick="showScreen('s-result')">← 결과로</button>
+<button class="act-btn dark-btn" onclick="goTalisman()">부적 만들기 →</button>
+</div>
+</div>
+</div>
+
+<div id="s-talisman" class="screen">
+<div style="padding:1.5rem 0">
+<div class="dark-panel" style="margin-bottom:1.5rem">
+<p class="label-sm" style="margin-bottom:.5rem">나만의 사이버 부적</p>
+<p style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:1.25rem">색상을 선택하고 카드를 클릭해 뒤집어 보세요</p>
+<div id="swatchRow" class="color-swatch-row" style="margin-bottom:1rem"></div>
+<div class="talisman-wrap">
+<div class="talisman" id="talisman" onclick="flipTalisman()">
+<div class="talisman-face" id="tFront" style="display:flex;flex-direction:column">
+<div class="t-border"></div>
+<div class="t-corner tl"></div><div class="t-corner tr"></div>
+<div class="t-corner bl"></div><div class="t-corner br"></div>
+<div id="tSymbol" style="font-size:64px;line-height:1;text-align:center;margin:28px 0 8px"></div>
+<p style="font-size:13px;color:rgba(255,255,255,.7);text-align:center;letter-spacing:.15em;font-weight:500" id="tName"></p>
+<p style="font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:6px" id="tElem"></p>
+<div id="tPaletteRow" style="display:flex;gap:5px;justify-content:center;padding:16px 16px 0;flex-wrap:wrap"></div>
+<p style="font-size:10px;color:rgba(255,255,255,.25);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">나를 읽는 색 · PAL</p>
+</div>
+<div class="talisman-face talisman-back" id="tBack" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+<div class="t-border"></div>
+<div class="t-corner tl"></div><div class="t-corner tr"></div>
+<div class="t-corner bl"></div><div class="t-corner br"></div>
+<div class="t-guardian-circle" id="tGuardianCircle">
+<span id="tGuardianEmoji" style="font-size:72px;line-height:1"></span>
+</div>
+<p style="font-size:16px;font-weight:500;color:#fff;text-align:center;letter-spacing:.1em" id="tGuardianName"></p>
+<p style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;padding:8px 20px;line-height:1.6" id="tGuardianDesc"></p>
+<p style="font-size:10px;color:rgba(255,255,255,.2);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">수호신 · 나를 읽는 색</p>
+</div>
+</div>
+</div>
+<p style="font-size:11px;color:rgba(255,255,255,.3);text-align:center;margin-top:.75rem">클릭하면 뒤집힙니다</p>
+</div>
+<div class="action-row">
+<button class="act-btn" onclick="showScreen('s-palette')">← 팔레트</button>
+<button class="act-btn dark-btn" onclick="goFinale()">완성하기 →</button>
+</div>
+</div>
+</div>
+
+<div id="s-finale" class="screen">
+<div style="padding:1.5rem 0">
+<div class="qr-box">
+<p class="label-sm" style="margin-bottom:1rem">부적 다운로드</p>
+<div id="qrCanvas" style="display:flex;justify-content:center;margin-bottom:1rem"></div>
+<p style="font-size:12px;color:rgba(255,255,255,.3)">QR 코드로 부적을 저장하세요</p>
+</div>
+<div class="dark-panel" style="margin-bottom:1.5rem;padding:2rem">
+<div id="closingLines">
+<span class="closing-line" id="cl0">우리는 모두 서로 다른 색으로 이루어져 있습니다.</span>
+<span class="closing-line" id="cl1">어떤 색은 아직 발견되지 않았습니다.</span>
+<span class="closing-line" id="cl2" style="font-size:12px;color:rgba(255,255,255,.3)">오늘 마주한 색들이 당신을 설명하는 답안지가 아니라,</span>
+<span class="closing-line" id="cl3" style="font-size:12px;color:rgba(255,255,255,.3)">앞으로 당신이 그려나갈 다채로운 내일을 위한</span>
+<span class="closing-line" id="cl4" style="font-size:12px;color:rgba(255,255,255,.3)">아름다운 밑색이 되기를 바랍니다.</span>
+</div>
+</div>
+<div class="action-row">
+<button class="act-btn" onclick="showScreen('s-talisman')">← 부적으로</button>
+<button class="act-btn" onclick="showScreen('s-intro')">처음으로</button>
+</div>
+</div>
+</div>
+
+</div>
+<script>
+const OH={
+목:{color:'#4A90D9',light:'#d4e8f7',dark:'#0d2a4a',korColor:'청(靑)',element:'나무',dir:'동',season:'봄',emotion:'인(仁)',desc:'성장과 생명의 기운. 유연하고 창의적이며, 새로운 시작을 이끄는 힘.',guardian:'청룡',guardianSymbol:'🐉',guardianDesc:'동쪽을 지키는 수호신. 생명과 창조의 힘을 상징하며 새로운 시작을 인도합니다.',palette:['#4A90D9','#7AB0E5','#B3D0F0','#2A6AB9','#0d2a4a'],paletteDesc:['청색 대표','하늘빛 보조','안개빛 배경','깊은 청 포인트','밤하늘 강조']},
+화:{color:'#E05C4A',light:'#fae8e5',dark:'#4a0d0d',korColor:'적(赤)',element:'불',dir:'남',season:'여름',emotion:'예(禮)',desc:'열정과 활력의 기운. 강렬하고 표현적이며, 주변을 밝히는 따뜻함.',guardian:'주작',guardianSymbol:'🦅',guardianDesc:'남쪽을 지키는 수호신. 불꽃처럼 재생하는 붉은 봉황. 열정과 생명력을 상징합니다.',palette:['#E05C4A','#E88070','#F2B8B0','#C03020','#4a0d0d'],paletteDesc:['적색 대표','산호빛 보조','장밋빛 배경','진홍 포인트','불씨 강조']},
+토:{color:'#E8B84B',light:'#faf3e0',dark:'#3a2a04',korColor:'황(黃)',element:'흙',dir:'중앙',season:'환절기',emotion:'신(信)',desc:'안정과 신뢰의 기운. 중심을 잡고 포용하며, 대지의 힘.',guardian:'황룡',guardianSymbol:'🌕',guardianDesc:'중앙을 지키는 수호신. 대지의 어머니로 조화와 균형을 이루게 합니다.',palette:['#E8B84B','#F0CC7A','#F8E8B8','#C89020','#3a2a04'],paletteDesc:['황색 대표','금빛 보조','모래빛 배경','황토 포인트','대지 강조']},
+금:{color:'#B8B0A0',light:'#f5f3f0',dark:'#2a2820',korColor:'백(白)',element:'쇠',dir:'서',season:'가을',emotion:'의(義)',desc:'순수와 결단의 기운. 날카롭고 명확하며 통찰력이 있습니다.',guardian:'백호',guardianSymbol:'🐯',guardianDesc:'서쪽을 지키는 수호신. 결단력과 의리를 상징하는 흰 호랑이입니다.',palette:['#C8C0B0','#D8D0C0','#E8E4DC','#A8A090','#2a2820'],paletteDesc:['백색 대표','은빛 보조','달빛 배경','철색 포인트','먹빛 강조']},
+수:{color:'#384858',light:'#e0e4e8',dark:'#0a0f14',korColor:'흑(黑)',element:'물',dir:'북',season:'겨울',emotion:'지(智)',desc:'지혜와 깊이의 기운. 고요하고 유연하며 통찰이 있습니다.',guardian:'현무',guardianSymbol:'🐢',guardianDesc:'북쪽을 지키는 수호신. 지혜와 장수, 깊은 지식을 상징합니다.',palette:['#384858','#5a6878','#9AAAB8','#1a2838','#0a0f14'],paletteDesc:['흑색 대표','회청 보조','안개 배경','먹빛 포인트','밤 강조']}
+};
+const ORDER=['목','화','토','금','수'];
+let G={name:'당신',strong:'목',weak:'수',counts:{},selColor:null,selPalIdx:0,currentDisplayPalette:[]};
+
+window.onload=function(){makeStars('introStars',30);};
+
+function showScreen(id){
+document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});
+const el=document.getElementById(id);
+if(el){el.style.display='block';el.classList.add('active')}
+}
+
+function makeStars(id,n){
+const el=document.getElementById(id);if(!el)return;
+el.innerHTML='';
+for(let i=0;i<n;i++){
+const s=document.createElement('div');s.className='star';
+const sz=Math.random()*2.5+.5;
+s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*2}s;`;
+el.appendChild(s);
+}}
+
+function toggleTimeInput(chk){
+const sec=document.getElementById('timeSection');
+if(chk.checked){
+sec.classList.add('hidden');
+document.getElementById('hIn').value='';
+document.getElementById('minIn').value='';
+}else{
+sec.classList.remove('hidden');
+}
+}
+
+function hexToRgb(hex){
+return[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];
+}
+function rgbToHex(r,g,b){
+return'#'+[r,g,b].map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+}
+function blendHex(hex1,hex2,t){
+const[r1,g1,b1]=hexToRgb(hex1);
+const[r2,g2,b2]=hexToRgb(hex2);
+return rgbToHex(r1+(r2-r1)*t,g1+(g2-g1)*t,b1+(b2-b1)*t);
+}
+
+function calcOhaeng(y,m,d,kstHour){
+const sO=['목','목','화','화','토','토','금','금','수','수'];
+const bO=['수','토','목','목','토','화','화','토','금','금','토','수'];
+const mO=['목','목','화','화','토','토','금','금','수','수','목','목'];
+const dM=['목','화','토','금','수'];
+const hourBranch=['수','토','목','목','토','화','화','토','금','금','토','수'];
+const ys=sO[((y-4)%10+10)%10];
+const yb=bO[((y-4)%12+12)%12];
+const mo=mO[(m-1)%12];
+const dy=dM[d%5];
+const counts={};ORDER.forEach(o=>counts[o]=0);
+const pillars=[ys,yb,mo,dy];
+if(kstHour!==null&&kstHour!==undefined){
+const hIdx=Math.floor(((kstHour+1)%24)/2);
+pillars.push(hourBranch[hIdx]);
+}
+pillars.forEach(x=>counts[x]++);
+const total=pillars.length;
+const sorted=ORDER.slice().sort((a,b)=>counts[b]-counts[a]);
+return{counts,strong:sorted[0],weak:sorted[sorted.length-1],total};
+}
+
+function doAnalysis(){
+const name=document.getElementById('nameIn').value.trim()||'당신';
+let y=parseInt(document.getElementById('yIn').value);
+let m=parseInt(document.getElementById('mIn').value);
+let d=parseInt(document.getElementById('dIn').value);
+const noTime=document.getElementById('noTimeChk').checked;
+const hRaw=document.getElementById('hIn').value;
+const minRaw=document.getElementById('minIn').value;
+const tz=document.getElementById('tzIn').value;
+const err=document.getElementById('errMsg');
+if(isNaN(y)||isNaN(m)||isNaN(d)||y<1900||y>2099||m<1||m>12||d<1||d>31){
+err.style.display='block';err.textContent='생년월일을 올바르게 입력해주세요.';return;
+}
+err.style.display='none';
+let kstHour=null;
+if(!noTime&&hRaw!==''&&!isNaN(parseInt(hRaw))){
+const h=parseInt(hRaw);
+const min=parseInt(minRaw)||0;
+if(h<0||h>23){err.style.display='block';err.textContent='시간은 0~23 사이로 입력해주세요.';return;}
+try{
+const padded=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00`;
+const localStr=new Date(padded).toLocaleString('en-CA',{timeZone:tz,hour12:false});
+const utcStr=new Date(padded).toLocaleString('en-CA',{timeZone:'UTC',hour12:false});
+const offsetMs=new Date(localStr)-new Date(utcStr);
+const utcMs=new Date(padded).getTime()-offsetMs;
+const kstDate=new Date(utcMs+9*3600*1000);
+y=kstDate.getUTCFullYear();m=kstDate.getUTCMonth()+1;d=kstDate.getUTCDate();kstHour=kstDate.getUTCHours();
+}catch(e){kstHour=null;}
+}
+const r=calcOhaeng(y,m,d,kstHour);
+G={...G,name,strong:r.strong,weak:r.weak,counts:r.counts,total:r.total,usedTime:kstHour!==null};
+G.selColor=OH[r.weak].palette[0];
+showScreen('s-load1');
+const msgs=['기운을 분석하는 중...','오방색을 배열하는 중...','수호신을 소환하는 중...'];
+let mi=0;const lt=document.getElementById('loadTxt1');
+const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},700);
+setTimeout(()=>{clearInterval(iv);buildResult();showScreen('s-result');},2600);
+}
+
+function buildResult(){
+const s=OH[G.strong],w=OH[G.weak];
+const pillarNote=G.usedTime?'사주 (년·월·일·시)':'삼주 (년·월·일)';
+const hdr=document.getElementById('resultHeader');
+hdr.innerHTML=`<div id="rStars"></div><div style="position:relative;z-index:2">
+<p class="label-sm" style="margin-bottom:.3rem">${G.name}의 색</p>
+<h2 style="font-size:20px;font-weight:500;color:#fff;margin-bottom:.4rem">당신을 읽는 색</h2>
+<p style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:.75rem;letter-spacing:.08em">${pillarNote} 기준</p>
+<div style="display:flex;gap:20px;justify-content:center">
+<div style="text-align:center"><div style="width:32px;height:32px;border-radius:50%;background:${s.color};margin:0 auto 4px;border:2px solid rgba(255,255,255,.2)"></div>
+<p style="font-size:10px;color:rgba(255,255,255,.4)">강한 기운</p>
+<p style="font-size:12px;color:#fff;font-weight:500">${G.strong} · ${s.korColor}</p></div>
+<div style="width:.5px;background:rgba(255,255,255,.15)"></div>
+<div style="text-align:center"><div style="width:32px;height:32px;border-radius:50%;background:${w.color};margin:0 auto 4px;border:2px solid rgba(255,255,255,.2)"></div>
+<p style="font-size:10px;color:rgba(255,255,255,.4)">약한 기운</p>
+<p style="font-size:12px;color:#fff;font-weight:500">${G.weak} · ${w.korColor}</p></div>
+</div></div>`;
+makeStars('rStars',20);
+const total=G.total||4;
+const bw=document.getElementById('barsWrap');
+bw.innerHTML=ORDER.map(o=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+<div style="width:12px;height:12px;border-radius:3px;background:${OH[o].color};flex-shrink:0"></div>
+<span style="font-size:12px;color:#666;width:16px">${o}</span>
+<div style="flex:1;height:4px;background:#eee;border-radius:99px;overflow:hidden">
+<div style="width:${Math.round((G.counts[o]/total)*100)}%;height:100%;background:${OH[o].color};border-radius:99px"></div>
+</div>
+<span style="font-size:11px;color:#999;width:26px;text-align:right">${Math.round((G.counts[o]/total)*100)}%</span>
+</div>`).join('');
+const oc=document.getElementById('ohaengCards');
+oc.innerHTML=`<div style="background:${s.dark};border-radius:12px;padding:1.25rem">
+<span class="badge" style="background:${s.color};color:#fff;margin-bottom:.75rem;display:inline-block">강한 기운 · ${s.element}</span>
+<p style="font-size:20px;font-weight:500;color:#fff;margin:.5rem 0 .2rem">${G.strong} · ${s.korColor}</p>
+<p style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:.6rem">${s.dir} · ${s.season} · ${s.emotion}</p>
+<p style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.7">${s.desc}</p>
+</div>
+<div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1.25rem">
+<span class="badge" style="background:#f0f0f0;color:#666;margin-bottom:.75rem;display:inline-block">약한 기운 · ${w.element}</span>
+<p style="font-size:20px;font-weight:500;color:${w.color};margin:.5rem 0 .2rem">${G.weak} · ${w.korColor}</p>
+<p style="font-size:11px;color:#999;margin-bottom:.6rem">${w.dir} · ${w.season} · ${w.emotion}</p>
+<p style="font-size:12px;color:#555;line-height:1.7">${w.desc}</p>
+</div>`;
+const gc=document.getElementById('guardianCards');
+gc.innerHTML=[{d:s,type:'강한 기운의 수호신'},{d:w,type:'약한 기운의 수호신'}].map(({d,type})=>`
+<div style="background:#fff;border:0.5px solid #e0e0e0;border-top:3px solid ${d.color};border-radius:12px;padding:1.25rem">
+<p style="font-size:10px;letter-spacing:.08em;color:#999;margin-bottom:.5rem">${type}</p>
+<p style="font-size:28px;margin-bottom:.4rem">${d.guardianSymbol}</p>
+<p style="font-size:15px;font-weight:500;color:#111;margin-bottom:.4rem">${d.guardian}</p>
+<p style="font-size:11px;color:#555;line-height:1.6">${d.guardianDesc}</p>
+</div>`).join('');
+}
+
+function goPaletteLoading(){
+showScreen('s-load2');
+const msgs=['컬러 팔레트를 배열하는 중...','카드 덱을 섞는 중...','색채 에너지를 담는 중...'];
+let mi=0;const lt=document.getElementById('loadTxt2');
+const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},800);
+setTimeout(()=>{clearInterval(iv);buildPalette();showScreen('s-palette');setTimeout(dealCards,100);},2400);
+}
+
+function buildPalette(){
+const s=OH[G.strong];
+const w=OH[G.weak];
+document.getElementById('paletteTitleTxt').textContent=`${G.strong}(${s.korColor}) · ${G.weak}(${w.korColor}) — 오행의 균형`;
+
+// 강한 색 2장 / 중간 혼합 단색 1장 / 약한 색 2장
+const midColor=blendHex(s.palette[0],w.palette[0],0.5);
+
+G.currentDisplayPalette=[
+  {color:s.palette[0], desc:`${G.strong} 대표색`, type:'strong'},
+  {color:s.palette[1], desc:`${G.strong} 보조색`, type:'strong'},
+  {color:midColor,     desc:`균형 · 두 기운의 중간색`, type:'blend'},
+  {color:w.palette[0], desc:`${G.weak} 대표색`, type:'weak'},
+  {color:w.palette[1], desc:`${G.weak} 보조색`, type:'weak'}
+];
+
+G.selPalIdx=2;
+G.selColor=midColor;
+document.getElementById('deckArea').innerHTML='';
+}
+
+let dealDone=false;
+function dealCards(){
+if(dealDone)return;dealDone=true;
+const area=document.getElementById('deckArea');
+area.innerHTML='';
+const N=5;const CW=110;const CH=168;
+const finalX=[-224,-112,0,112,224];
+const angles=[-22,-11,0,11,22];
+const cards=[];
+
+for(let i=0;i<N;i++){
+const item=G.currentDisplayPalette[i];
+const c=document.createElement('div');
+c.className='card3d';
+c.style.cssText=`width:${CW}px;height:${CH}px;left:calc(50% - ${CW/2}px);top:calc(50% - ${CH/2}px);z-index:${i+1};transform:translateX(0) translateY(60px) rotate(0deg) scale(.8);opacity:0;transition:transform .55s cubic-bezier(.4,0,.2,1) ${i*.12}s, opacity .4s ${i*.12}s`;
+
+let badge='';
+if(item.type==='strong'){
+  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;color:rgba(255,255,255,.8)">강 ${i+1}/2</span>`;
+}else if(item.type==='blend'){
+  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.3);padding:2px 6px;border-radius:4px;color:#fff;font-weight:600">균형</span>`;
+}else{
+  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;color:rgba(255,255,255,.8)">약 ${i-2}/2</span>`;
+}
+
+const borderStyle=item.type==='blend'
+  ?'border:2px solid rgba(255,255,255,0.5);'
+  :'border:1px solid rgba(255,255,255,.15);';
+
+c.innerHTML=`<div class="card-face" style="background:${item.color};${borderStyle}">
+<span style="font-size:10px;font-family:monospace;color:rgba(255,255,255,.7)">${item.color}</span>
+<div style="text-align:center">
+<div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);margin:0 auto 6px"></div>
+<p style="font-size:11px;color:rgba(255,255,255,.95);line-height:1.4;word-break:keep-all">${item.desc}</p>
+</div>
+<p style="text-align:right">${badge}</p>
+</div>`;
+
+const capI=i;const capCol=item.color;const capDesc=item.desc;
+c.onclick=()=>selectPaletteColor(capCol,capDesc,capI,c);
+area.appendChild(c);cards.push(c);
+}
+
+requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+cards.forEach((c,i)=>{
+c.style.transform=`translateX(${finalX[i]}px) translateY(0) rotate(${angles[i]}deg) scale(1)`;
+c.style.opacity='1';
+});
+setTimeout(()=>selectPaletteColor(G.currentDisplayPalette[2].color,G.currentDisplayPalette[2].desc,2,cards[2]),900);
+})});
+}
+
+function selectPaletteColor(col,desc,idx,cardEl){
+G.selColor=col;G.selPalIdx=idx;
+document.querySelectorAll('.card3d').forEach(c=>c.style.outline='none');
+if(cardEl)cardEl.style.outline='2px solid rgba(255,255,255,.9)';
+const info=document.getElementById('selectedColorInfo');
+info.innerHTML=`<div style="width:36px;height:36px;border-radius:6px;background:${col};border:1px solid rgba(255,255,255,.3);flex-shrink:0"></div>
+<div style="text-align:left"><p style="font-size:13px;color:#fff;font-weight:500">${desc}</p>
+<p style="font-size:11px;font-family:monospace;color:rgba(255,255,255,.5)">${col}</p></div>`;
+}
+
+function goTalisman(){
+dealDone=false;
+const w=OH[G.weak],s=OH[G.strong];
+document.getElementById('tFront').style.background=G.selColor||G.currentDisplayPalette[2].color;
+document.getElementById('tBack').style.background=s.dark;
+document.getElementById('tGuardianCircle').style.background=`${w.dark}cc`;
+document.getElementById('tSymbol').textContent=w.guardianSymbol;
+document.getElementById('tName').textContent=`${G.weak} · ${w.korColor}`;
+document.getElementById('tElem').textContent=`${w.dir} · ${w.season} · ${w.emotion}`;
+document.getElementById('tGuardianEmoji').textContent=w.guardianSymbol;
+document.getElementById('tGuardianName').textContent=w.guardian;
+document.getElementById('tGuardianDesc').textContent=w.guardianDesc;
+const sr=document.getElementById('swatchRow');
+sr.innerHTML=G.currentDisplayPalette.map((item,i)=>`<div class="swatch${i===G.selPalIdx?' selected':''}" style="background:${item.color}" onclick="applySwatchColor('${item.color}',${i},this)"></div>`).join('');
+const pr=document.getElementById('tPaletteRow');
+pr.innerHTML=G.currentDisplayPalette.map((item,i)=>`<div style="width:${i===G.selPalIdx?28:18}px;height:${i===G.selPalIdx?28:18}px;border-radius:${i===G.selPalIdx?6:4}px;background:${item.color};border:1px solid rgba(255,255,255,.2);transition:all .2s;flex-shrink:0"></div>`).join('');
+document.getElementById('talisman').classList.remove('flipped');
+showScreen('s-talisman');
+}
+
+function applySwatchColor(col,idx,el){
+G.selColor=col;G.selPalIdx=idx;
+document.getElementById('tFront').style.background=col;
+document.querySelectorAll('.swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
+const pr=document.getElementById('tPaletteRow');
+pr.innerHTML=G.currentDisplayPalette.map((item,i)=>`<div style="width:${i===idx?28:18}px;height:${i===idx?28:18}px;border-radius:${i===idx?6:4}px;background:${item.color};border:1px solid rgba(255,255,255,.2);transition:all .2s;flex-shrink:0"></div>`).join('');
+}
+
+function flipTalisman(){
+document.getElementById('talisman').classList.toggle('flipped');
+}
+
+function goFinale(){
+showScreen('s-finale');
+const qrDiv=document.getElementById('qrCanvas');
+qrDiv.innerHTML='';
+try{
+new QRCode(qrDiv,{text:`나를 읽는 색 · ${G.name} · ${G.weak}(${OH[G.weak].korColor}) · PAL 2026`,width:160,height:160,colorDark:'#ffffff',colorLight:'#000000',correctLevel:QRCode.CorrectLevel.M});
+}catch(e){
+qrDiv.innerHTML=`<div style="width:160px;height:160px;background:#111;border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">QR 생성 완료<br>${G.name}의 부적</p></div>`;
+}
+setTimeout(()=>{
+['cl0','cl1','cl2','cl3','cl4'].forEach((id,i)=>{
+setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('visible');},i*900);
+});
+},400);
+}
+</script>
+</body>
+</html>
