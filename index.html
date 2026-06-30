@@ -14,6 +14,9 @@ body{font-family:var(--font-sans);background:#0a0a0a;min-height:100vh;display:fl
 #app{width:100%;max-width:960px;padding:0 1rem}
 .screen{display:none}
 .screen.active{display:block}
+#s-load1.active,#s-load2.active{min-height:100vh;display:flex;align-items:center;justify-content:center}
+#s-palette.active{min-height:100vh;display:flex;align-items:center;justify-content:center}
+#s-palette.active>div{width:100%}
 .dark-panel{background:var(--dark);border-radius:var(--radius-lg);padding:2.5rem 2rem;text-align:center}
 .star-wrap{position:relative;overflow:hidden;border-radius:var(--radius-lg)}
 .star{position:absolute;border-radius:50%;background:#fff;animation:tw 3s infinite}
@@ -34,10 +37,10 @@ select option{background:#1a1a1a;color:#fff}
 @keyframes pulse{0%{opacity:.3}100%{opacity:.9}}
 .model-viewer{width:140px;height:140px;margin:0 auto;position:relative}
 .model-viewer canvas{display:block;width:100% !important;height:100% !important}
-.deck-area{min-height:300px;display:flex;align-items:center;justify-content:center;position:relative;margin:1rem 0}
-.card3d{position:absolute;width:110px;height:168px;cursor:pointer;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s,outline .15s}
+.deck-area{min-height:360px;display:flex;align-items:center;justify-content:center;position:relative;margin:1rem 0}
+.card3d{position:absolute;width:132px;height:202px;cursor:pointer;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .4s,outline .15s}
 .card3d:hover{z-index:20;transform-origin:center bottom}
-.card-face{width:100%;height:100%;border-radius:10px;border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;justify-content:space-between;padding:10px 8px}
+.card-face{width:100%;height:100%;border-radius:10px;border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;justify-content:space-between;padding:12px 10px}
 .talisman-wrap{perspective:800px;width:240px;margin:0 auto}
 .talisman{width:240px;height:360px;position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.4,0,.2,1);cursor:pointer}
 .talisman.flipped{transform:rotateY(180deg)}
@@ -193,8 +196,8 @@ select option{background:#1a1a1a;color:#fff}
 <div style="padding:1.5rem 0">
 <div class="dark-panel" style="margin-bottom:1.5rem;padding:1.5rem 1rem">
 <p class="label-sm" style="margin-bottom:.5rem">나만의 컬러 팔레트 배열</p>
-<p id="paletteTitleTxt" style="font-size:16px;font-weight:500;color:#fff;margin-bottom:.3rem"></p>
-<p style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.5rem">카드를 클릭해서 부적에 담을 고유 색상을 선택하세요</p>
+<p id="paletteTitleTxt" style="font-size:21px;font-weight:500;color:#fff;margin-bottom:.4rem"></p>
+<p style="font-size:14px;color:rgba(255,255,255,.45);margin-bottom:.5rem">카드를 클릭해서 부적에 담을 고유 색상을 선택하세요</p>
 <div class="deck-area" id="deckArea"></div>
 <div id="selectedColorInfo" style="min-height:60px;display:flex;align-items:center;justify-content:center;gap:12px;padding:.5rem 0"></div>
 </div>
@@ -571,8 +574,8 @@ function dealCards(){
 if(dealDone)return;dealDone=true;
 const area=document.getElementById('deckArea');
 area.innerHTML='';
-const N=5;const CW=110;const CH=168;
-const finalX=[-224,-112,0,112,224];
+const N=5;const CW=132;const CH=202;
+const finalX=[-260,-130,0,130,260];
 const angles=[-22,-11,0,11,22];
 const cards=[];
 
@@ -584,11 +587,11 @@ c.style.cssText=`width:${CW}px;height:${CH}px;left:calc(50% - ${CW/2}px);top:cal
 
 let badge='';
 if(item.type==='strong'){
-  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;color:rgba(255,255,255,.8)">강 ${i+1}/2</span>`;
+  badge=`<span style="font-size:11px;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:4px;color:rgba(255,255,255,.8)">강 ${i+1}/2</span>`;
 }else if(item.type==='blend'){
-  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.3);padding:2px 6px;border-radius:4px;color:#fff;font-weight:600">균형</span>`;
+  badge=`<span style="font-size:11px;background:rgba(255,255,255,0.3);padding:3px 8px;border-radius:4px;color:#fff;font-weight:600">균형</span>`;
 }else{
-  badge=`<span style="font-size:9px;background:rgba(255,255,255,0.2);padding:2px 6px;border-radius:4px;color:rgba(255,255,255,.8)">약 ${i-2}/2</span>`;
+  badge=`<span style="font-size:11px;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:4px;color:rgba(255,255,255,.8)">약 ${i-2}/2</span>`;
 }
 
 const borderStyle=item.type==='blend'
@@ -596,10 +599,10 @@ const borderStyle=item.type==='blend'
   :'border:1px solid rgba(255,255,255,.15);';
 
 c.innerHTML=`<div class="card-face" style="background:${item.color};${borderStyle}">
-<span style="font-size:10px;font-family:monospace;color:rgba(255,255,255,.7)">${item.color}</span>
+<span style="font-size:12px;font-family:monospace;color:rgba(255,255,255,.7)">${item.color}</span>
 <div style="text-align:center">
-<div style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);margin:0 auto 6px"></div>
-<p style="font-size:11px;color:rgba(255,255,255,.95);line-height:1.4;word-break:keep-all">${item.desc}</p>
+<div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);margin:0 auto 8px"></div>
+<p style="font-size:14px;color:rgba(255,255,255,.95);line-height:1.4;word-break:keep-all">${item.desc}</p>
 </div>
 <p style="text-align:right">${badge}</p>
 </div>`;
@@ -623,9 +626,9 @@ G.selColor=col;G.selPalIdx=idx;
 document.querySelectorAll('.card3d').forEach(c=>c.style.outline='none');
 if(cardEl)cardEl.style.outline='2px solid rgba(255,255,255,.9)';
 const info=document.getElementById('selectedColorInfo');
-info.innerHTML=`<div style="width:36px;height:36px;border-radius:6px;background:${col};border:1px solid rgba(255,255,255,.3);flex-shrink:0"></div>
-<div style="text-align:left"><p style="font-size:13px;color:#fff;font-weight:500">${desc}</p>
-<p style="font-size:11px;font-family:monospace;color:rgba(255,255,255,.5)">${col}</p></div>`;
+info.innerHTML=`<div style="width:40px;height:40px;border-radius:6px;background:${col};border:1px solid rgba(255,255,255,.3);flex-shrink:0"></div>
+<div style="text-align:left"><p style="font-size:15px;color:#fff;font-weight:500">${desc}</p>
+<p style="font-size:13px;font-family:monospace;color:rgba(255,255,255,.5)">${col}</p></div>`;
 }
 
 function goTalisman(){
