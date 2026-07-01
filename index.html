@@ -628,13 +628,49 @@ ${getGuardianModel(key)}
 </div>
 </div>`;
 }).join('');
+attachGuardianModelFallbacks();
 }
 
 
 function getGuardianModel(key){
 const file=MODEL_BY_ELEMENT[key];
-if(!file) return `<span class="g-symbol">${OH[key].guardianSymbol}</span>`;
-return `<model-viewer src="${resolveAssetUrl(file)}" auto-rotate camera-controls disable-zoom style="width:260px;height:260px;background:transparent;"></model-viewer>`;
+const symbol=(OH[key]&&OH[key].guardianSymbol)||'✦';
+if(!file){
+  console.warn('[guardian] no model file mapped for element:',key,'→ showing emoji fallback');
+  return `<span class="g-symbol">${symbol}</span>`;
+}
+const url=resolveAssetUrl(file);
+console.log('[guardian] loading model for',key,'→',url);
+return `<model-viewer src="${url}" data-el-key="${key}" data-el-symbol="${symbol}" data-src-file="${file}" auto-rotate camera-controls disable-zoom style="width:260px;height:260px;background:transparent;"></model-viewer>`;
+}
+
+// After guardian cards are inserted into the DOM, watch each <model-viewer>.
+// If a model fails to load (wrong filename/case, missing file, network error, etc.)
+// automatically swap it for the emoji fallback instead of leaving a blank box,
+// and log the exact reason to the console for debugging.
+function attachGuardianModelFallbacks(){
+  document.querySelectorAll('#guardianCards model-viewer').forEach(mv=>{
+    const key=mv.dataset.elKey;
+    const symbol=mv.dataset.elSymbol||'✦';
+    const file=mv.dataset.srcFile;
+    const replaceWithEmoji=(reason)=>{
+      console.error(`[guardian] "${file}" failed to load for element "${key}" (${reason}). Falling back to emoji. Check: 1) file exists in the SAME folder as index.html on GitHub Pages, 2) filename/case matches exactly (case-sensitive), 3) it is a valid .glb file.`);
+      if(mv.isConnected){
+        const span=document.createElement('span');
+        span.className='g-symbol';
+        span.textContent=symbol;
+        mv.replaceWith(span);
+      }
+    };
+    mv.addEventListener('error',(e)=>replaceWithEmoji(e && e.detail ? JSON.stringify(e.detail) : 'error event'));
+    // Safety net: if neither 'load' nor 'error' fires within 8s (e.g. request hangs), fall back too.
+    const timeoutId=setTimeout(()=>{
+      if(mv.isConnected && !mv.modelIsVisible){
+        replaceWithEmoji('timeout - no load/error event within 8s');
+      }
+    },8000);
+    mv.addEventListener('load',()=>clearTimeout(timeoutId));
+  });
 }
 function goPaletteLoading(){
 showScreen('s-load2');
