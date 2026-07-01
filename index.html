@@ -78,6 +78,8 @@ select option{background:#1a1a1a;color:#fff}
 .guardian-image .g-symbol{font-size:130px;line-height:1;filter:drop-shadow(0 10px 26px rgba(0,0,0,.45));position:relative;z-index:2}
 .guardian-image::before{content:'';position:absolute;inset:0;opacity:.9}
 .guardian-image .g-glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(50px);opacity:.55;z-index:1}
+.guardian-image .g-model{width:190px;height:190px;position:relative;z-index:2;filter:drop-shadow(0 10px 26px rgba(0,0,0,.45))}
+.guardian-image .g-model canvas{display:block;width:100% !important;height:100% !important}
 .g-kicker{font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:.1rem}
 .g-name{font-size:21px;font-weight:700;color:#fff;margin-bottom:.3rem;line-height:1.3}
 .g-block{display:flex;flex-direction:column;gap:.45rem}
@@ -89,6 +91,7 @@ select option{background:#1a1a1a;color:#fff}
 .guardian-image{min-height:220px;flex:none}
 .guardian-image .g-symbol{font-size:90px}
 .guardian-image .g-glow{width:180px;height:180px}
+.guardian-image .g-model{width:130px;height:130px}
 }
 @keyframes cardPre{0%{transform:translateY(0)}100%{transform:translateY(-10px)}}
 .no-time-label{display:flex;align-items:center;gap:8px;justify-content:center;cursor:pointer;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:.75rem;transition:color .2s}
@@ -334,11 +337,13 @@ const MODEL_DATA_URL = "data:model/gltf-binary;base64,Z2xURgIAAADk+gsAsAkAAEpTT0
 
 /* ===== Guardian model/image mapping (GitHub Pages ready) =====
    ✅ Put these files in the SAME folder as this HTML (recommended):
-   - 황룡.glb, 청룡.glb, 백호.glb
+   - 황룡.glb, 청룡.glb, 백호.glb, jara.glb (수/흑 · 현무)
    - 황룡.png, 청룡.png, 백호.png   (talisman images)
    ※ If image files are missing, it falls back to built-in SVG labels automatically.
+   ※ 결과 페이지(guardianCards)에서는 금(백호)·수(jara) 두 원소만 3D 모델로 표시되고,
+     나머지(목/화/토)는 기존 이모지를 그대로 사용합니다.
 */
-const MODEL_BY_ELEMENT = { '토':'황룡.glb', '목':'청룡.glb', '금':'백호.glb' };
+const MODEL_BY_ELEMENT = { '토':'황룡.glb', '목':'청룡.glb', '금':'백호.glb', '수':'jara.glb' };
 const IMAGE_BY_ELEMENT = { '토':'황룡.png', '목':'청룡.png', '금':'백호.png' };
 const IMAGE_FALLBACK_DATA = {
   '토': "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22256%22%20height%3D%22256%22%3E%0A%3Cdefs%3E%0A%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23111%22/%3E%0A%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23333%22/%3E%0A%20%20%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20rx%3D%2228%22%20fill%3D%22url%28%23g%29%22/%3E%0A%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%0A%20%20%20%20%20%20font-size%3D%2248%22%20fill%3D%22%23fff%22%20font-family%3D%22sans-serif%22%3E%ED%99%A9%EB%A3%A1%3C/text%3E%0A%3C/svg%3E",
@@ -534,7 +539,7 @@ initModelViewer('modelViewer1', G.strong);
 const msgs=['기운을 분석하는 중...','오방색을 배열하는 중...','수호신을 소환하는 중...'];
 let mi=0;const lt=document.getElementById('loadTxt1');
 const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},700);
-setTimeout(()=>{clearInterval(iv);stopModelViewer('modelViewer1');buildResult();showScreen('s-result');},2600);
+setTimeout(()=>{clearInterval(iv);stopModelViewer('modelViewer1');showScreen('s-result');buildResult();},2600);
 }
 
 function buildResult(){
@@ -560,10 +565,16 @@ ${G.name}님은 사주에서 <b style="color:${s.color}">${G.strong}(${s.korColo
 makeStars('ovStars',16);
 
 const gc=document.getElementById('guardianCards');
-gc.innerHTML=[{d:s,key:G.strong,label:'강한 기운'},{d:w,key:G.weak,label:'약한 기운'}].map(({d,key,label},i)=>{
+const RESULT_3D_ELEMENTS=['금','수']; // 백호(금)·jara(흑/수)만 3D 모델로 표시, 나머지는 이모지 유지
+const gcCards=[{d:s,key:G.strong,label:'강한 기운'},{d:w,key:G.weak,label:'약한 기운'}];
+gc.innerHTML=gcCards.map(({d,key,label},i)=>{
 const info=GUARDIAN_INFO[key];
 const badgeStyle=`background:${hexToRgba(d.color,0.22)};color:${d.light};border-color:${hexToRgba(d.color,0.55)}`;
 const para=arr=>arr.map(t=>`<p>${t}</p>`).join('');
+const use3d=RESULT_3D_ELEMENTS.includes(key);
+const visual=use3d
+ ?`<div class="g-model" id="gModel-${i}"></div>`
+ :`<span class="g-symbol">${d.guardianSymbol}</span>`;
 return`
 <div class="guardian-card${i===1?' reverse':''}" style="background:${hexToRgba(d.color,0.1)};border-color:${hexToRgba(d.color,0.4)}">
 <div class="guardian-text">
@@ -584,10 +595,15 @@ ${para(info.meaning)}
 </div>
 <div class="guardian-image" style="background:linear-gradient(135deg,${hexToRgba(d.dark,0.95)},${hexToRgba(d.color,0.35)})">
 <div class="g-glow" style="background:${d.color}"></div>
-<span class="g-symbol">${d.guardianSymbol}</span>
+${visual}
 </div>
 </div>`;
 }).join('');
+
+// 이모지 대신 3D 모델을 쓰는 카드에 대해 실제 뷰어를 초기화
+gcCards.forEach(({key},i)=>{
+if(RESULT_3D_ELEMENTS.includes(key)) initModelViewer(`gModel-${i}`, key);
+});
 }
 
 function goPaletteLoading(){
