@@ -632,10 +632,9 @@ ${getGuardianModel(key)}
 
 
 function getGuardianModel(key){
-const models={토:'황룡.glb',수:'청룡.glb',화:'Untitled.glb',금:'백호.glb'};
-const file=models[key];
+const file=MODEL_BY_ELEMENT[key];
 if(!file) return `<span class="g-symbol">${OH[key].guardianSymbol}</span>`;
-return `<model-viewer src="${file}" auto-rotate camera-controls disable-zoom style="width:260px;height:260px;background:transparent;"></model-viewer>`;
+return `<model-viewer src="${resolveAssetUrl(file)}" auto-rotate camera-controls disable-zoom style="width:260px;height:260px;background:transparent;"></model-viewer>`;
 }
 function goPaletteLoading(){
 showScreen('s-load2');
