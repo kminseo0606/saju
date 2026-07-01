@@ -574,7 +574,7 @@ initModelViewer('modelViewer1');
 const msgs=['기운을 분석하는 중...','오방색을 배열하는 중...','수호신을 소환하는 중...'];
 let mi=0;const lt=document.getElementById('loadTxt1');
 const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},700);
-setTimeout(()=>{clearInterval(iv);stopModelViewer('modelViewer1');buildResult();showScreen('s-result');},2600);
+setTimeout(()=>{clearInterval(iv);stopModelViewer('modelViewer1');showScreen('s-result');buildResult();},2600);
 }
 
 function buildResult(){
