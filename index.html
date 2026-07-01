@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -535,7 +536,7 @@ const r=calcOhaeng(y,m,d,kstHour);
 G={...G,name,strong:r.strong,weak:r.weak,counts:r.counts,total:r.total,usedTime:kstHour!==null};
 G.selColor=OH[r.weak].palette[0];
 showScreen('s-load1');
-initModelViewer('modelViewer1', G.strong);
+initModelViewer('modelViewer1', null); // 로딩 화면은 항상 기본 내장 모델만 표시 (실제 수호신 모델 아님)
 const msgs=['기운을 분석하는 중...','오방색을 배열하는 중...','수호신을 소환하는 중...'];
 let mi=0;const lt=document.getElementById('loadTxt1');
 const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},700);
@@ -608,7 +609,7 @@ if(RESULT_3D_ELEMENTS.includes(key)) initModelViewer(`gModel-${i}`, key);
 
 function goPaletteLoading(){
 showScreen('s-load2');
-initModelViewer('modelViewer2', G.strong);
+initModelViewer('modelViewer2', null); // 로딩 화면은 항상 기본 내장 모델만 표시 (실제 수호신 모델 아님)
 const msgs=['컬러 팔레트를 배열하는 중...','카드 덱을 섞는 중...','색채 에너지를 담는 중...'];
 let mi=0;const lt=document.getElementById('loadTxt2');
 const iv=setInterval(()=>{mi=(mi+1)%msgs.length;if(lt)lt.textContent=msgs[mi];},800);
