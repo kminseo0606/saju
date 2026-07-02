@@ -345,9 +345,51 @@ select option{background:#1a1a1a;color:#fff}
 <p style="font-size:13px;color:rgba(255,255,255,.7);text-align:center;letter-spacing:.15em;font-weight:500" id="tName"></p>
 <p style="font-size:11px;color:rgba(255,255,255,.35);text-align:center;margin-top:6px" id="tElem"></p>
 <div id="tPaletteRow" style="display:flex;gap:5px;justify-content:center;padding:16px 16px 0;flex-wrap:wrap"></div>
-<p style="font-size:10px;color:rgba(255,255,255,.25);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">나를 읽는 색 · PAL</p>
+<p id="tFrontFooter" style="font-size:10px;color:rgba(255,255,255,.25);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">나를 읽는 색 · PAL</p>
 </div>
 <div class="talisman-face talisman-back" id="tBack" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+<div id="tJujakBack" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;overflow:hidden">
+<svg id="jujakBackSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 2200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">
+  <defs>
+    <style>
+      #jujakBackSvg .cls-1 {
+        fill: #d62828;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" width="1000" height="2200"/>
+  <rect x="425" y="990.32" width="150" height="450"/>
+  <circle cx="800" cy="115.32" r="75"/>
+  <path d="M125,990.32c82.84,0,150,67.16,150,150H125v-150Z"/>
+  <path d="M725,1140.32c0-82.84,67.16-150,150-150v150h-150Z"/>
+  <path d="M275,40.32c0,82.84-67.16,150-150,150V40.32h150Z"/>
+  <path d="M725,40.32c0,82.84-67.16,150-150,150V40.32h150Z"/>
+  <path d="M50,1990.32v150s150,0,150,0c-82.84,0-150-67.16-150-150Z"/>
+  <path d="M500,1990.32v150h-150c82.84,0,150-67.16,150-150Z"/>
+  <path d="M500,1990.32v150s150,0,150,0c-82.84,0-150-67.16-150-150Z"/>
+  <path d="M950,1990.32v150h-150c82.84,0,150-67.16,150-150Z"/>
+  <path d="M275,1440.32h150v-150c0,82.84-67.16,150-150,150Z"/>
+  <path d="M725,1440.32h-150v-150c0,82.84,67.16,150,150,150Z"/>
+  <path d="M950,1290.32v150h-150c82.84,0,150-67.16,150-150Z"/>
+  <path d="M50,1290.32v150h150c-82.84,0-150-67.16-150-150Z"/>
+  <path d="M125,490.32v450c82.84,0,150-67.16,150-150v-300H125Z"/>
+  <path d="M500,1440.32c0,248.53-201.47,450-450,450v-450h450Z"/>
+  <path d="M500,1440.32c0,248.53,201.47,450,450,450v-450s-450,0-450,0Z"/>
+  <path d="M725,415.32v-75h75c82.84,0,150-67.16,150-150H350v150h225v75h-225v525h150v-118.52c0-20.71,16.79-37.5,37.5-37.5s37.5,16.79,37.5,37.5v118.52h150v-118.52c0-20.71,16.79-37.5,37.5-37.5s37.5,16.79,37.5,37.5v118.52c82.84,0,150-67.16,150-150v-375h-225ZM537.5,715.32c-20.71,0-37.5-16.79-37.5-37.5s16.79-37.5,37.5-37.5,37.5,16.79,37.5,37.5-16.79,37.5-37.5,37.5ZM537.5,565.32c-20.71,0-37.5-16.79-37.5-37.5s16.79-37.5,37.5-37.5,37.5,16.79,37.5,37.5-16.79,37.5-37.5,37.5ZM762.5,715.32c-20.71,0-37.5-16.79-37.5-37.5s16.79-37.5,37.5-37.5,37.5,16.79,37.5,37.5-16.79,37.5-37.5,37.5ZM762.5,565.32c-20.71,0-37.5-16.79-37.5-37.5s16.79-37.5,37.5-37.5,37.5,16.79,37.5,37.5-16.79,37.5-37.5,37.5Z"/>
+  <path d="M312.5,410.87c-26.19,0-47.5-21.31-47.5-47.5s21.31-47.5,47.5-47.5c3.28,0,6.48.33,9.57.97,17.91-38.45,27.93-81.31,27.93-126.53H50c0,82.84,67.16,150,150,150-82.84,0-150,67.16-150,150h300c0-30.01-8.83-57.96-24.01-81.41-4.28,1.27-8.8,1.96-13.49,1.96Z"/>
+  <circle cx="312.5" cy="363.37" r="37.5"/>
+  <g>
+    <path d="M49.94,1940.54h70.55c21.71,0,27.99,1.08,33.85,5.54,5.86,4.32,9,11.48,9,20.39,0,7.29-2,13.5-5.43,17.15-3,3.11-6.28,4.46-13.28,5.94,14.28,3.92,15.85,6.62,16.71,29.71.29,6.89.43,7.97,2.57,11.34h-38.13c-.57-3.65-.71-4.73-1.14-11.88-.71-18.77-2.14-20.39-17.57-20.39h-20.71v32.27h-36.42v-90.06ZM110.49,1979.29c6,0,8.57-.4,10.28-1.48,2.28-1.49,3.71-4.19,3.71-7.56,0-6.48-3.28-8.64-13.71-8.64h-24.42v17.69h24.14Z"/>
+    <path d="M179.46,1940.54h107.82v22.96h-71.41v9.99h59.12v22.95h-59.12v11.21h75.83v22.96h-112.25v-90.06Z"/>
+    <path d="M306.28,1940.54h63.12c24.56,0,35.27,2.57,44.84,10.94,9.14,7.83,13.71,19.72,13.71,35.24,0,14.72-4,25.93-11.85,33.22-9.43,8.51-18.42,10.67-46.13,10.67h-63.69v-90.06ZM360.26,2007.65c12,0,16.71-.67,20.71-3.11,5.14-3.11,8-9.72,8-18.77s-2.71-15.53-7.85-18.9c-4.14-2.84-7.28-3.38-21.28-3.38h-17.14v44.15h17.57Z"/>
+    <path d="M441.09,1962.95h30.99v28.22h-30.99v-28.22ZM441.09,2002.38h30.99v28.22h-30.99v-28.22Z"/>
+    <path d="M531.91,1940.54h108.97v22.96h-72.55v10.53h59.98v22.95h-59.98v33.62h-36.42v-90.06Z"/>
+    <path d="M653.87,1940.54h36.42v90.06h-36.42v-90.06Z"/>
+    <path d="M709.28,1940.54h70.55c21.71,0,27.99,1.08,33.85,5.54,5.86,4.32,9,11.48,9,20.39,0,7.29-2,13.5-5.43,17.15-3,3.11-6.28,4.46-13.28,5.94,14.28,3.92,15.85,6.62,16.71,29.71.29,6.89.43,7.97,2.57,11.34h-38.13c-.57-3.65-.71-4.73-1.14-11.88-.71-18.77-2.14-20.39-17.57-20.39h-20.71v32.27h-36.42v-90.06ZM769.84,1979.29c6,0,8.57-.4,10.28-1.48,2.28-1.49,3.71-4.19,3.71-7.56,0-6.48-3.28-8.64-13.71-8.64h-24.42v17.69h24.14Z"/>
+    <path d="M838.81,1940.54h107.82v22.96h-71.41v9.99h59.12v22.95h-59.12v11.21h74.77v22.96h-111.19v-90.06Z"/>
+  </g>
+</svg>
+</div>
 <div class="t-border"></div>
 <div class="t-corner tl"></div><div class="t-corner tr"></div>
 <div class="t-corner bl"></div><div class="t-corner br"></div>
@@ -356,7 +398,7 @@ select option{background:#1a1a1a;color:#fff}
 </div>
 <p style="font-size:16px;font-weight:500;color:#fff;text-align:center;letter-spacing:.1em" id="tGuardianName"></p>
 <p style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;padding:8px 20px;line-height:1.6" id="tGuardianDesc"></p>
-<p style="font-size:10px;color:rgba(255,255,255,.2);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">수호신 · 나를 읽는 색</p>
+<p id="tBackFooter" style="font-size:10px;color:rgba(255,255,255,.2);text-align:center;margin-top:auto;padding:12px;letter-spacing:.08em">수호신 · 나를 읽는 색</p>
 </div>
 </div>
 </div>
@@ -972,40 +1014,69 @@ showScreen('s-talisman');
 
 function applySwatchColor(col,idx,el){
 G.selColor=col;G.selPalIdx=idx;
-document.getElementById('tFront').style.background=col;
+if(G.weak!=='화') document.getElementById('tFront').style.background=col;
 document.querySelectorAll('.swatch').forEach((s,i)=>s.classList.toggle('selected',i===idx));
 const pr=document.getElementById('tPaletteRow');
 pr.innerHTML=G.currentDisplayPalette.map((item,i)=>`<div style="width:${i===idx?28:18}px;height:${i===idx?28:18}px;border-radius:${i===idx?6:4}px;background:${item.color};border:1px solid rgba(255,255,255,.2);transition:all .2s;flex-shrink:0"></div>`).join('');
 }
 
 function flipTalisman(){
-document.getElementById('talisman').classList.toggle('flipped');
+var t=document.getElementById('talisman');
+t.classList.toggle('flipped');
+var b=document.getElementById('jujakFlipBtn');
+if(b && G.weak==='화'){ b.textContent = t.classList.contains('flipped') ? '\u27f3 \uC55E\uBA74(\uC0C9\uCE60) \uBCF4\uAE30' : '\u27f3 \uB4B7\uBA74 \uBCF4\uAE30'; }
 }
 
 /* ===== 주작(火 기운) 전용: SVG 부적 구역 색칠 커스터마이징 ===== */
 function setupJujakTalisman(){
   var isJujak = (G.weak === '화'); // 주작은 '화(火)' 기운의 수호신
-  var art = document.getElementById('tJujakArt');
+  var art = document.getElementById('tJujakArt');       // 앞면: 색칠 부적
+  var backArt = document.getElementById('tJujakBack');  // 뒷면: 첨부한 정적 SVG
+  var tFront = document.getElementById('tFront');
+  var tBack = document.getElementById('tBack');
   var hint = document.getElementById('tHint');
   var flipHint = document.getElementById('tFlipHint');
   var flipBtn = document.getElementById('jujakFlipBtn');
   if(!art) return;
+
+  var frontIds = ['tSymbolWrap','tName','tElem','tPaletteRow','tFrontFooter'];
+  var backIds  = ['tGuardianCircle','tGuardianName','tGuardianDesc','tBackFooter'];
+  var frameSel = '#tFront .t-border, #tFront .t-corner, #tBack .t-border, #tBack .t-corner';
+
   if(isJujak){
+    // 앞면(색칠 부적): 카드 배경 제거
+    if(tFront) tFront.style.background = 'transparent';
     art.style.display = 'flex';
-    ['tSymbolWrap','tName','tElem','tPaletteRow'].forEach(function(id){
+    art.style.background = 'transparent';
+    art.style.padding = '0';
+    // 뒷면(첨부한 새 SVG, 정적): 카드 배경 제거 + 표시
+    if(tBack) tBack.style.background = 'transparent';
+    if(backArt) backArt.style.display = 'flex';
+    // 기존 콘텐츠 숨김(앞면 심볼/이름, 뒷면 수호신 원, footer 등)
+    frontIds.concat(backIds).forEach(function(id){
       var e = document.getElementById(id); if(e) e.style.display = 'none';
     });
+    // 카드 프레임(테두리/모서리) 숨김
+    var fr = document.querySelectorAll(frameSel);
+    for(var i=0;i<fr.length;i++){ fr[i].style.display = 'none'; }
+    // 안내문/버튼
     if(hint) hint.textContent = '색을 고른 뒤, 부적의 구역을 눌러 색칠하세요';
     if(flipHint) flipHint.textContent = '구역을 누르면 그 부분이 칠해집니다';
-    if(flipBtn) flipBtn.style.display = 'inline-block';
+    if(flipBtn){ flipBtn.style.display = 'inline-block'; flipBtn.textContent = '\u27f3 \uB4B7\uBA74 \uBCF4\uAE30'; }
     if(!G.selColor && G.currentDisplayPalette[G.selPalIdx]) G.selColor = G.currentDisplayPalette[G.selPalIdx].color;
     bindJujakPaint();
   } else {
+    // 다른 수호신: 원상복구
     art.style.display = 'none';
+    if(backArt) backArt.style.display = 'none';
+    frontIds.concat(backIds).forEach(function(id){
+      var e = document.getElementById(id); if(e) e.style.display = '';
+    });
     var sw = document.getElementById('tSymbolWrap'); if(sw) sw.style.display = 'flex';
-    var nm = document.getElementById('tName'); if(nm) nm.style.display = '';
-    var el = document.getElementById('tElem'); if(el) el.style.display = '';
     var pr = document.getElementById('tPaletteRow'); if(pr) pr.style.display = 'flex';
+    var gc = document.getElementById('tGuardianCircle'); if(gc) gc.style.display = 'flex';
+    var fr = document.querySelectorAll(frameSel);
+    for(var i=0;i<fr.length;i++){ fr[i].style.display = ''; }
     if(hint) hint.textContent = '색상을 선택하고 카드를 클릭해 뒤집어 보세요';
     if(flipHint) flipHint.textContent = '클릭하면 뒤집힙니다';
     if(flipBtn) flipBtn.style.display = 'none';
