@@ -1071,8 +1071,8 @@ select option{background:#1a1a1a;color:#fff}
 <div style="padding:1.5rem 0">
 <div class="qr-box">
 <p class="label-sm" style="margin-bottom:1rem">부적 저장하기</p>
-<button class="act-btn dark-btn" onclick="printTalisman()" style="padding:14px 40px;font-size:15px">💾 저장하기 (PDF)</button>
-<p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:.9rem;line-height:1.6">앞면·뒷면이 2페이지로 함께 저장돼요.<br>잠시 후 뜨는 창에서 프린터 선택 항목을 <b style="color:rgba(255,255,255,.5)">"PDF로 저장"</b>으로 바꾼 뒤 저장을 눌러주세요</p>
+<button class="act-btn dark-btn" onclick="saveTalismanImage()" id="saveTalBtn" style="padding:14px 40px;font-size:15px">💾 부적 저장하기</button>
+<p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:.9rem;line-height:1.6">앞면·뒷면이 하나로 이어진<br>이미지 파일(PNG)로 저장돼요</p>
 </div>
 <div class="dark-panel" style="margin-bottom:1.5rem;padding:2rem">
 <div id="closingLines">
@@ -1854,57 +1854,75 @@ setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('vis
 },400);
 }
 
-function printTalisman(){
-  const weak = G.weak;
-  const frontOrig = document.querySelector(`.talArt[data-el="${weak}"]`);
-  const backOrig = document.querySelector(`.talBack[data-el="${weak}"]`);
-  if(!frontOrig || !backOrig){
-    alert('부적 정보를 찾을 수 없어요. 부적 화면에서 다시 시도해주세요.');
-    return;
-  }
-
-  // 현재 보이는 기운 하나만 복제(다른 4개 기운의 이미지는 제외해 용량을 줄임)
-  const frontClone = frontOrig.cloneNode(true);
-  const backClone = backOrig.cloneNode(true);
-  [frontClone, backClone].forEach(el=>{
-    el.style.position = 'relative';
-    el.style.inset = 'auto';
-    el.style.display = 'flex';
-    el.style.width = '100%';
-    el.style.height = '100%';
+function loadImageFromSrc(src){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>resolve(img);
+    img.onerror = (e)=>reject(new Error('이미지 로드 실패'));
+    img.src = src;
   });
-
-  const frontHTML = frontClone.outerHTML;
-  const backHTML = backClone.outerHTML;
-
-  const w = window.open('', '_blank');
-  if(!w){ alert('팝업이 차단되었어요. 팝업 허용 후 다시 눌러주세요.'); return; }
-
-  w.document.open();
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${G.name}_부적</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.page{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;background:#0a0a0a}
-.page:last-child{page-break-after:auto}
-.card{width:340px;height:765px;position:relative;border-radius:12px;overflow:hidden;background:#111}
-@media print{
-  @page{margin:0}
-  body{background:#fff}
-  .page{background:#fff}
 }
-</style>
-</head><body>
-<div class="page"><div class="card">${frontHTML}</div></div>
-<div class="page"><div class="card">${backHTML}</div></div>
-</body></html>`);
-  w.document.close();
 
-  const doPrint = () => { try{ w.focus(); w.print(); }catch(e){} };
-  if(w.document.readyState === 'complete'){
-    setTimeout(doPrint, 300);
-  } else {
-    w.onload = () => setTimeout(doPrint, 300);
+async function saveTalismanImage(){
+  const btn = document.getElementById('saveTalBtn');
+  const origLabel = btn ? btn.textContent : '';
+  if(btn){ btn.textContent = '저장 준비 중...'; btn.disabled = true; }
+  try{
+    const weak = G.weak;
+    const frontOrig = document.querySelector(`.talArt[data-el="${weak}"]`);
+    const backOrig = document.querySelector(`.talBack[data-el="${weak}"]`);
+    if(!frontOrig || !backOrig) throw new Error('부적 요소를 찾을 수 없어요.');
+
+    const W = 1000, H = 2200, GAP = 60;
+
+    // 앞면(색칠된 SVG)을 이미지로 변환
+    const frontSvg = frontOrig.querySelector('svg');
+    const frontClone = frontSvg.cloneNode(true);
+    frontClone.setAttribute('width', W);
+    frontClone.setAttribute('height', H);
+    const frontSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(frontClone));
+    const frontImg = await loadImageFromSrc(frontSrc);
+
+    // 뒷면(완성 이미지): svg 또는 base64 이미지
+    let backImg;
+    const backSvg = backOrig.querySelector('svg');
+    if(backSvg){
+      const backClone = backSvg.cloneNode(true);
+      backClone.setAttribute('width', W);
+      backClone.setAttribute('height', H);
+      const backSrc = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(backClone));
+      backImg = await loadImageFromSrc(backSrc);
+    } else {
+      const backImgEl = backOrig.querySelector('img');
+      backImg = await loadImageFromSrc(backImgEl.src);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H * 2 + GAP;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(frontImg, 0, 0, W, H);
+    ctx.drawImage(backImg, 0, H + GAP, W, H);
+
+    canvas.toBlob(blob=>{
+      if(!blob){ throw new Error('이미지 생성 실패'); }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${G.name}_부적.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 5000);
+      if(btn){ btn.textContent = origLabel; btn.disabled = false; }
+    }, 'image/png');
+
+  }catch(err){
+    console.error('부적 저장 실패:', err);
+    alert('부적 이미지를 저장하지 못했어요. 다시 시도해주세요.');
+    if(btn){ btn.textContent = origLabel; btn.disabled = false; }
   }
 }
 </script>
