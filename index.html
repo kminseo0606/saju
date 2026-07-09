@@ -867,7 +867,8 @@ const ov=document.getElementById('sajuOverview');
 ov.innerHTML=`<div id="ovStars" style="position:absolute;inset:0"></div>
 <div style="position:relative;z-index:2">
 <p class="section-label" style="color:rgba(255,255,255,.5)">사주 풀이</p>
-${G.pillarStr?`<p style="font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.55);margin-bottom:.8rem">${G.pillarStr} · 일간 ${G.ilgan}</p>`:''}
+${G.pillarStr?`<p style="font-size:12px;letter-spacing:.06em;color:rgba(255,255,255,.55);margin-bottom:.35rem">${G.pillarStr} · 일간 ${G.ilgan}</p>
+<p style="font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.4);margin-bottom:.8rem">오행 분포 — ${ORDER.map(o=>`${o} ${G.counts[o]||0}`).join(' · ')}</p>`:''}
 <p style="font-size:13px;line-height:2;color:rgba(255,255,255,.85)">
 ${G.name}님은 사주에서 <b style="color:${s.color}">${G.strong}(${s.korColor})</b> 기운이 가장 강하게 흐르고 있습니다. ${s.desc} ${s.dir}의 방향과 ${s.season}의 기운이 두드러지며, ${s.emotion}의 성향이 자연스럽게 드러나는 편입니다.<br><br>
 반면 <b style="color:${w.color}">${G.weak}(${w.korColor})</b> 기운은 상대적으로 약한 편입니다. ${w.desc} 이 기운이 상징하는 ${w.emotion}의 가치를 의식적으로 채워나간다면, 강한 기운과 약한 기운이 서로 균형을 이루며 한층 단단한 삶의 태도를 만들어갈 수 있을 것입니다.
