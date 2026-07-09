@@ -1906,22 +1906,23 @@ async function saveTalismanImage(){
     ctx.drawImage(frontImg, 0, 0, W, H);
     ctx.drawImage(backImg, 0, H + GAP, W, H);
 
-    canvas.toBlob(blob=>{
-      if(!blob){ throw new Error('이미지 생성 실패'); }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${G.name}_부적.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url), 5000);
-      if(btn){ btn.textContent = origLabel; btn.disabled = false; }
-    }, 'image/png');
+    const blob = await new Promise((resolve, reject)=>{
+      canvas.toBlob(b=>{ if(b) resolve(b); else reject(new Error('canvas.toBlob이 빈 값을 반환했어요')); }, 'image/png');
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${G.name}_부적.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    if(btn){ btn.textContent = origLabel; btn.disabled = false; }
 
   }catch(err){
     console.error('부적 저장 실패:', err);
-    alert('부적 이미지를 저장하지 못했어요. 다시 시도해주세요.');
+    alert('부적 이미지를 저장하지 못했어요.\n\n[에러 내용]\n' + (err && err.message ? err.message : err) + '\n\n이 내용을 캡처해서 보내주세요.');
     if(btn){ btn.textContent = origLabel; btn.disabled = false; }
   }
 }
