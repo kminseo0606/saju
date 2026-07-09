@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나를 읽는 색 · PAL</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
@@ -1845,15 +1847,79 @@ function bindJujakPaint(){
   G._jujakBound = true;
 }
 
+// TODO: https://api.imgbb.com/ 에서 무료로 발급받은 API 키를 여기에 넣으세요.
+const IMGBB_API_KEY = '8d6397c061dcec3f2913e514e991fcdf';
+
 function goFinale(){
 showScreen('s-finale');
 const qrDiv=document.getElementById('qrCanvas');
-qrDiv.innerHTML='';
-try{
-new QRCode(qrDiv,{text:`나를 읽는 색 · ${G.name} · ${G.weak}(${OH[G.weak].korColor}) · PAL 2026`,width:160,height:160,colorDark:'#ffffff',colorLight:'#000000',correctLevel:QRCode.CorrectLevel.M});
-}catch(e){
-qrDiv.innerHTML=`<div style="width:160px;height:160px;background:#111;border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">QR 생성 완료<br>${G.name}의 부적</p></div>`;
-}
+qrDiv.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:12px">부적 이미지를 준비하는 중...</p>';
+
+const talismanEl = document.getElementById('talisman');
+
+html2canvas(talismanEl, {backgroundColor:null, scale:2, useCORS:true}).then(canvas=>{
+  // 다운로드 버튼도 함께 준비 (같은 기기에서 바로 저장 가능)
+  const dataUrl = canvas.toDataURL('image/png');
+  const dlLink = document.createElement('a');
+  dlLink.href = dataUrl;
+  dlLink.download = `${G.name}_부적.png`;
+  dlLink.textContent = '📥 이 기기에 바로 저장';
+  dlLink.className = 'act-btn';
+  dlLink.style.cssText = 'display:block;margin-top:10px;text-decoration:none;text-align:center';
+
+  if(!IMGBB_API_KEY || IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE'){
+    // API 키 미설정 시: 다운로드 버튼만 제공, QR은 안내 텍스트로 대체
+    qrDiv.innerHTML = '';
+    qrDiv.appendChild(dlLink);
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:11px;color:rgba(255,255,255,.3);margin-top:8px';
+    note.textContent = 'QR 다운로드를 쓰려면 코드에 ImgBB API 키를 설정하세요.';
+    qrDiv.appendChild(note);
+    return;
+  }
+
+  // base64 데이터만 추출 (data:image/png;base64, 이후 부분)
+  const base64Data = dataUrl.split(',')[1];
+  const formData = new FormData();
+  formData.append('image', base64Data);
+
+  fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(result => {
+    if(result && result.data && result.data.url){
+      const imageUrl = result.data.url;
+      qrDiv.innerHTML = '';
+      new QRCode(qrDiv, {
+        text: imageUrl,
+        width: 160,
+        height: 160,
+        colorDark: '#ffffff',
+        colorLight: '#000000',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      qrDiv.appendChild(dlLink);
+    } else {
+      throw new Error('업로드 응답 오류');
+    }
+  })
+  .catch(err => {
+    console.error('이미지 업로드 실패:', err);
+    qrDiv.innerHTML = '';
+    qrDiv.appendChild(dlLink);
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:11px;color:rgba(255,255,255,.3);margin-top:8px';
+    note.textContent = '업로드에 실패했어요. 이 기기에서 바로 저장해주세요.';
+    qrDiv.appendChild(note);
+  });
+
+}).catch(err=>{
+  console.error('캡처 실패:', err);
+  qrDiv.innerHTML = `<div style="width:160px;height:160px;background:#111;border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">부적 이미지를 만들지 못했어요</p></div>`;
+});
+
 setTimeout(()=>{
 ['cl0','cl1','cl2','cl3','cl4'].forEach((id,i)=>{
 setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('visible');},i*900);
