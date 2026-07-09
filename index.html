@@ -5,8 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나를 읽는 색 · PAL</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
@@ -100,6 +98,21 @@ select option{background:#1a1a1a;color:#fff}
 .time-section{transition:opacity .3s,max-height .4s;overflow:hidden;max-height:300px;opacity:1}
 .time-section.hidden{max-height:0;opacity:0;pointer-events:none}
 .divider{width:40px;height:0.5px;background:rgba(255,255,255,.12);margin:.75rem auto}
+
+/* 인쇄 시 부적 카드만 보이도록 나머지 요소는 숨김 */
+@media print{
+  body *{visibility:hidden !important}
+  #talisman, #talisman *{visibility:visible !important}
+  #talisman{
+    position:fixed !important;
+    top:50% !important;
+    left:50% !important;
+    transform:translate(-50%,-50%) !important;
+    box-shadow:none !important;
+  }
+  #talisman.flipped{transform:translate(-50%,-50%) rotateY(180deg) !important}
+  @page{margin:0}
+}
 </style>
 </head>
 <body>
@@ -1072,9 +1085,9 @@ select option{background:#1a1a1a;color:#fff}
 <div id="s-finale" class="screen">
 <div style="padding:1.5rem 0">
 <div class="qr-box">
-<p class="label-sm" style="margin-bottom:1rem">부적 다운로드</p>
-<div id="qrCanvas" style="display:flex;justify-content:center;margin-bottom:1rem"></div>
-<p style="font-size:12px;color:rgba(255,255,255,.3)">QR 코드로 부적을 저장하세요</p>
+<p class="label-sm" style="margin-bottom:1rem">부적 저장하기</p>
+<button class="act-btn dark-btn" onclick="printTalisman()" style="padding:14px 40px;font-size:15px">🖨️ 인쇄하기</button>
+<p style="font-size:12px;color:rgba(255,255,255,.3);margin-top:.9rem;line-height:1.6">인쇄 창에서 "PDF로 저장"을 선택하면<br>부적을 파일로 저장할 수 있어요</p>
 </div>
 <div class="dark-panel" style="margin-bottom:1.5rem;padding:2rem">
 <div id="closingLines">
@@ -1847,124 +1860,17 @@ function bindJujakPaint(){
   G._jujakBound = true;
 }
 
-// TODO: https://api.imgbb.com/ 에서 무료로 발급받은 API 키를 여기에 넣으세요.
-const IMGBB_API_KEY = '8d6397c061dcec3f2913e514e991fcdf';
-
 function goFinale(){
 showScreen('s-finale');
-const qrDiv=document.getElementById('qrCanvas');
-qrDiv.innerHTML='<p style="color:rgba(255,255,255,.4);font-size:12px">부적 이미지를 준비하는 중...</p>';
-
-const talismanEl = document.getElementById('talisman');
-const frontEl = document.getElementById('tFront');
-const backEl = document.getElementById('tBack');
-const isFlipped = talismanEl.classList.contains('flipped');
-
-// html2canvas는 3D flip(transform-style:preserve-3d, backface-visibility)을 제대로
-// 캡처하지 못해 빈/깨진 이미지가 생길 수 있음. 캡처 직전에만 3D 효과를 잠시 풀어준다.
-const saved = {
-  transform: talismanEl.style.transform,
-  transformStyle: talismanEl.style.transformStyle,
-  frontDisplay: frontEl.style.display,
-  backDisplay: backEl.style.display,
-  frontBackface: frontEl.style.backfaceVisibility,
-  backBackface: backEl.style.backfaceVisibility,
-  backTransform: backEl.style.transform
-};
-
-talismanEl.style.transform = 'none';
-talismanEl.style.transformStyle = 'flat';
-frontEl.style.backfaceVisibility = 'visible';
-backEl.style.backfaceVisibility = 'visible';
-backEl.style.transform = 'none';
-frontEl.style.display = isFlipped ? 'none' : 'flex';
-backEl.style.display = isFlipped ? 'flex' : 'none';
-
-function restoreStyles(){
-  talismanEl.style.transform = saved.transform;
-  talismanEl.style.transformStyle = saved.transformStyle;
-  frontEl.style.display = saved.frontDisplay;
-  backEl.style.display = saved.backDisplay;
-  frontEl.style.backfaceVisibility = saved.frontBackface;
-  backEl.style.backfaceVisibility = saved.backBackface;
-  backEl.style.transform = saved.backTransform;
-}
-
-html2canvas(talismanEl, {backgroundColor:null, scale:2, useCORS:true}).then(canvas=>{
-  restoreStyles();
-
-  canvas.toBlob(blob=>{
-    if(!blob){
-      qrDiv.innerHTML = `<div style="width:160px;height:160px;background:#111;border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">이미지를 만들지 못했어요</p></div>`;
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(blob);
-    const dlLink = document.createElement('a');
-    dlLink.href = objectUrl;
-    dlLink.download = `${G.name}_부적.png`;
-    dlLink.textContent = '📥 이 기기에 바로 저장';
-    dlLink.className = 'act-btn';
-    dlLink.style.cssText = 'display:block;margin-top:10px;text-decoration:none;text-align:center';
-
-    if(!IMGBB_API_KEY || IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE'){
-      qrDiv.innerHTML = '';
-      qrDiv.appendChild(dlLink);
-      const note = document.createElement('p');
-      note.style.cssText = 'font-size:11px;color:rgba(255,255,255,.3);margin-top:8px';
-      note.textContent = 'QR 다운로드를 쓰려면 코드에 ImgBB API 키를 설정하세요.';
-      qrDiv.appendChild(note);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', blob, `${G.name}_talisman.png`);
-
-    fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(result => {
-      if(result && result.data && result.data.url){
-        const imageUrl = result.data.url;
-        qrDiv.innerHTML = '';
-        new QRCode(qrDiv, {
-          text: imageUrl,
-          width: 160,
-          height: 160,
-          colorDark: '#ffffff',
-          colorLight: '#000000',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-        qrDiv.appendChild(dlLink);
-      } else {
-        throw new Error('업로드 응답 오류: ' + JSON.stringify(result));
-      }
-    })
-    .catch(err => {
-      console.error('이미지 업로드 실패:', err);
-      qrDiv.innerHTML = '';
-      qrDiv.appendChild(dlLink);
-      const note = document.createElement('p');
-      note.style.cssText = 'font-size:11px;color:rgba(255,255,255,.3);margin-top:8px';
-      note.textContent = '업로드에 실패했어요. 이 기기에서 바로 저장해주세요.';
-      qrDiv.appendChild(note);
-    });
-
-  }, 'image/png');
-
-}).catch(err=>{
-  restoreStyles();
-  console.error('캡처 실패:', err);
-  qrDiv.innerHTML = `<div style="width:160px;height:160px;background:#111;border:1px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center">부적 이미지를 만들지 못했어요</p></div>`;
-});
-
 setTimeout(()=>{
 ['cl0','cl1','cl2','cl3','cl4'].forEach((id,i)=>{
 setTimeout(()=>{const el=document.getElementById(id);if(el)el.classList.add('visible');},i*900);
 });
 },400);
+}
+
+function printTalisman(){
+window.print();
 }
 </script>
 </body>
